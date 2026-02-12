@@ -222,8 +222,10 @@ class LotteryConfig(commands.Cog):
     @lottery_settings.command(name="경품초기화")
     @is_guild_admin()
     async def prize_reset(self, ctx):
-        """경품을 꽝 100개로 초기화합니다."""
+        """모든 뽑기 데이터를 초기화합니다. (알림채널/역할 제외)"""
         guild_id = str(ctx.guild.id)
+
+        # 설정 초기화 (알림채널, 역할, 메시지 ID 유지)
         config = load_config()
         gc = config.setdefault(guild_id, get_guild_config(guild_id))
         gc["prizes"] = [{"name": "꽝", "count": 100}]
@@ -232,7 +234,26 @@ class LotteryConfig(commands.Cog):
         gc["drawn_numbers"] = {}
         save_config(config)
 
-        await ctx.send("🔄 경품이 초기화되었습니다. (꽝 100개)")
+        # 유저 데이터 초기화
+        data = load_data()
+        if guild_id in data:
+            data[guild_id] = {}
+            save_data(data)
+
+        # 기존 뽑기판 메시지 갱신 (버튼 전부 초록색으로)
+        board_cog = self.bot.get_cog("LotteryBoard")
+        if board_cog and gc.get("board_message_ids") and gc.get("board_channel_id"):
+            channel = self.bot.get_channel(gc["board_channel_id"])
+            if channel:
+                for idx, mid in enumerate(gc["board_message_ids"]):
+                    try:
+                        msg = await channel.fetch_message(mid)
+                        new_view = board_cog.create_board_view(guild_id, idx)
+                        await msg.edit(view=new_view)
+                    except Exception:
+                        pass
+
+        await ctx.send("🔄 모든 뽑기 데이터가 초기화되었습니다. (꽝 100개, 유저 기록 삭제)")
 
     # --- 채널/역할 설정 ---
 
@@ -336,7 +357,7 @@ class LotteryConfig(commands.Cog):
             return
 
         embed = discord.Embed(
-            title="🎰 뽑기",
+            title="설날 운명의 뽑기판",
             description="아래 버튼을 눌러 뽑기권을 확인하거나 받을 수 있어...",
             color=discord.Color.purple()
         )
