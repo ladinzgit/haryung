@@ -12,7 +12,7 @@ DATA_PATH = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file_
 
 TOTAL_NUMBERS = 100
 NUMBERS_PER_BOARD = 25
-DAILY_CLAIM_LIMIT = 2
+DAILY_CLAIM_LIMIT = 1
 
 
 def load_config():
