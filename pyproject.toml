@@ -4,21 +4,21 @@ version = "0.1.0"
 description = "discord event bot"
 package-mode = false
 authors = [
-    {name = "DinzGIT",email = "112818583+ladinzgit@users.noreply.github.com"}
+    {name = "DinzGIT", email = "112818583+ladinzgit@users.noreply.github.com"}
 ]
 license = {text = "MIT"}
 readme = "README.md"
 requires-python = ">=3.13"
-dependencies = [
-    "python-dotenv (>=1.2.1,<2.0.0)"
-]
 
-[dependency-groups]
-dev = [
+dependencies = [
+    "python-dotenv (>=1.2.1,<2.0.0)",
     "discord-py (>=2.6.4,<3.0.0)",
     "aiosqlite (>=0.22.1,<0.23.0)",
     "pytz (>=2025.2,<2026.0)"
 ]
+
+[dependency-groups]
+dev = []
 
 [build-system]
 requires = ["poetry-core>=2.0.0,<3.0.0"]

@@ -255,6 +255,27 @@ class LotteryConfig(commands.Cog):
 
         await ctx.send("🔄 모든 뽑기 데이터가 초기화되었습니다. (꽝 100개, 유저 기록 삭제)")
 
+    @lottery_settings.command(name="뽑기권부여")
+    @is_guild_admin()
+    async def grant_tickets(self, ctx, member: discord.Member, count: int):
+        """특정 유저에게 뽑기권을 강제 부여합니다."""
+        if count <= 0:
+            await ctx.send("1 이상의 숫자를 입력해주세요.")
+            return
+
+        guild_id = str(ctx.guild.id)
+        user_id = str(member.id)
+
+        data = load_data()
+        guild_data = data.setdefault(guild_id, {})
+        user_data = guild_data.setdefault(user_id, {
+            "tickets": 0, "total_draws": 0, "daily_claims": 0, "last_claim_date": None
+        })
+        user_data["tickets"] += count
+        save_data(data)
+
+        await ctx.send(f"🎫 {member.mention}에게 뽑기권 **{count}개**를 부여했습니다. (현재 보유: {user_data['tickets']}개)")
+
     # --- 채널/역할 설정 ---
 
     @lottery_settings.command(name="알림채널설정")
