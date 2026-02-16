@@ -198,7 +198,7 @@ class LotteryConfig(commands.Cog):
     @lottery_settings.command(name="경품셔플")
     @is_guild_admin()
     async def prize_shuffle(self, ctx):
-        """경품 번호를 랜덤 배정합니다."""
+        """경품 번호를 랜덤 배정하고 뽑기 기록을 초기화합니다."""
         guild_id = str(ctx.guild.id)
         config = load_config()
         gc = config.setdefault(guild_id, get_guild_config(guild_id))
@@ -215,9 +215,29 @@ class LotteryConfig(commands.Cog):
         random.shuffle(prize_pool)
         gc["shuffled_prizes"] = prize_pool
         gc["shuffled"] = True
+        gc["drawn_numbers"] = {}
         save_config(config)
 
-        await ctx.send("🔀 경품 번호가 셔플되었습니다! 이제 뽑기판을 생성할 수 있습니다.")
+        # 유저 데이터 초기화
+        data = load_data()
+        if guild_id in data:
+            data[guild_id] = {}
+            save_data(data)
+
+        # 기존 뽑기판 버튼 갱신
+        board_cog = self.bot.get_cog("LotteryBoard")
+        if board_cog and gc.get("board_message_ids") and gc.get("board_channel_id"):
+            channel = self.bot.get_channel(gc["board_channel_id"])
+            if channel:
+                for idx, mid in enumerate(gc["board_message_ids"]):
+                    try:
+                        msg = await channel.fetch_message(mid)
+                        new_view = board_cog.create_board_view(guild_id, idx)
+                        await msg.edit(view=new_view)
+                    except Exception:
+                        pass
+
+        await ctx.send("🔀 경품 번호가 셔플되었습니다! 뽑기 기록이 초기화되었습니다.")
 
     @lottery_settings.command(name="경품초기화")
     @is_guild_admin()

@@ -68,7 +68,7 @@ def reset_daily_if_needed(user_data: dict) -> bool:
     return False
 
 
-# --- 하령 페르소나 메시지 ---
+# --- 하령 페르소나 메시지 ---  
 
 CLAIM_MESSAGES = [
     "안녕... {user}...? 오늘의 운명을 살짝 들여다봤어...... 너에겐 **{n}회**의 기회를 줄게... 신중하게 골라......",
@@ -262,8 +262,8 @@ class LotteryInfoView(ui.View):
             )
             return
 
-        # 1~5 랜덤 뽑기권 지급
-        amount = random.randint(1, 5)
+        # 1~3 랜덤 뽑기권 지급
+        amount = random.randint(1, 3)
         user_data["tickets"] += amount
         user_data["daily_claims"] += 1
         save_data(data)
