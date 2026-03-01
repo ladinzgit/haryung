@@ -22,7 +22,7 @@ def get_env(key):
 application_id = get_env("APPLICATION_ID")
 
 intents = discord.Intents.all()
-bot = commands.Bot(command_prefix="*", intents=intents, help_command=None, application_id = application_id)
+bot = commands.Bot(command_prefix="?!", intents=intents, help_command=None, application_id = application_id)
 bot_token = get_env("DISCORD_BOT_TOKEN")
 
 # load cogs
