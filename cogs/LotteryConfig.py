@@ -360,7 +360,7 @@ class LotteryConfig(commands.Cog):
             return
 
         # 타이틀 메시지
-        BOARD_TITLE = "# <:BM_inv:1384475516152582144> <a:BM_gliter_008:1377697360632610823> 설날 운명의 뽑기판 <a:BM_gliter_008:1377697360632610823>"
+        BOARD_TITLE = "# <:BM_inv:1384475516152582144> 🧩 책방뽑기판"
         BOARD_SEPARATOR = "╴╴╴╴╴⊹ꮺ˚ ╴╴╴╴╴⊹˚ ╴╴╴╴˚ೃ ╴╴"
 
         await ctx.send(BOARD_TITLE)

@@ -157,6 +157,7 @@ class LotteryNumberButton(ui.Button):
 
         # 온 지급 처리 추가
         payment_msg = ""
+        is_auto_paid = False
         if prize != "꽝" and prize.endswith("온"):
             amount_str = prize[:-1].replace(",", "").strip()
             if amount_str.isdigit():
@@ -184,7 +185,8 @@ class LotteryNumberButton(ui.Button):
                     
                     await lottery_balance_manager.give(user_id, amount)
                     
-                    payment_msg = f"\n\n(지갑으로 **{amount}온**이 지급되었어...!)"
+                    payment_msg = f"\n\n(지갑으로 **{amount:,}온**이 지급되었어...!)"
+                    is_auto_paid = True
                 except ImportError as e:
                     print(f"하묘 모듈 임포트 오류: {e}")
                     payment_msg = "\n\n(앗... 지갑 송금 모듈을 찾을 수 없어 에러가 발생했어... 관리자에게 문의해줘...)"
@@ -210,13 +212,23 @@ class LotteryNumberButton(ui.Button):
             if alert_channel:
                 if prize != "꽝":
                     mention_role_id = gc.get("mention_role_id")
-                    role_mention = f"<@&{mention_role_id}>" if mention_role_id else ""
+                    role_mention = f"<@&{mention_role_id}>" if mention_role_id and not is_auto_paid else ""
+                    
+                    if is_auto_paid:
+                        desc = f"{interaction.user.mention}님이 **{self.number}번**에서 **{prize}**에 당첨되어 지갑으로 자동 지급되었습니다!"
+                    else:
+                        desc = f"{interaction.user.mention}님이 **{self.number}번**에서 **{prize}**에 당첨되었습니다!"
+                        
                     alert_embed = discord.Embed(
                         title="🎉 당첨!",
-                        description=f"{interaction.user.mention}님이 **{self.number}번**에서 **{prize}**에 당첨되었습니다!",
+                        description=desc,
                         color=discord.Color.gold()
                     )
-                    await alert_channel.send(content=role_mention, embed=alert_embed)
+                    
+                    if role_mention:
+                        await alert_channel.send(content=role_mention, embed=alert_embed)
+                    else:
+                        await alert_channel.send(embed=alert_embed)
                 else:
                     alert_embed = discord.Embed(
                         title="🎰 뽑기 결과",
