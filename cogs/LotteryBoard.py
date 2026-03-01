@@ -161,38 +161,36 @@ class LotteryNumberButton(ui.Button):
             amount_str = prize[:-1].replace(",", "").strip()
             if amount_str.isdigit():
                 amount = int(amount_str)
+                import sys
                 import os
+                
+                # 하묘 소스코드 경로를 sys.path에 추가 (현재 시스템에 맞게 동적 할당)
+                hamyo_src_path = "/home/ladinz/hamyo"
                 hamyo_db_path = "/home/ladinz/hamyo/data/balance.db"
                 if os.name == 'nt':
-                    hamyo_db_path = r"d:\projects\hamyo\data\balance.db"
+                     hamyo_src_path = r"d:\projects\hamyo"
+                     hamyo_db_path = r"d:\projects\hamyo\data\balance.db"
+
+                if hamyo_src_path not in sys.path:
+                    sys.path.insert(0, hamyo_src_path)
                 
                 try:
-                    import aiosqlite
-                    async with aiosqlite.connect(hamyo_db_path) as db:
-                        await db.execute("""
-                            INSERT INTO balances (user_id, balance)
-                            VALUES (?, ?)
-                            ON CONFLICT(user_id) DO UPDATE SET balance = balance + excluded.balance
-                        """, (user_id, amount))
-                        await db.commit()
+                    from src.core.balance_data_manager import BalanceDataManager
+                    
+                    # BalanceDataManager는 싱글톤이므로 하령 프로세스에도 인스턴스가 하나 생성됨
+                    # 모듈 로드 시 기본 경로("data/balance.db")로 저장되므로, 하묘 서버 경로로 덮어씌움
+                    lottery_balance_manager = BalanceDataManager()
+                    lottery_balance_manager.db_path = hamyo_db_path
+                    
+                    await lottery_balance_manager.give(user_id, amount)
+                    
                     payment_msg = f"\n\n(지갑으로 **{amount}온**이 지급되었어...!)"
-                except ImportError:
-                    import sqlite3
-                    try:
-                        with sqlite3.connect(hamyo_db_path) as db:
-                            db.execute("""
-                                INSERT INTO balances (user_id, balance)
-                                VALUES (?, ?)
-                                ON CONFLICT(user_id) DO UPDATE SET balance = balance + excluded.balance
-                            """, (user_id, amount))
-                            db.commit()
-                        payment_msg = f"\n\n(지갑으로 **{amount}온**이 지급되었어...!)"
-                    except Exception as e:
-                        print(f"하묘 DB 연동 오류 (sqlite3): {e}")
-                        payment_msg = "\n\n(앗... 지갑 송금에 에러가 발생했어... 관리자에게 문의해줘...)"
+                except ImportError as e:
+                    print(f"하묘 모듈 임포트 오류: {e}")
+                    payment_msg = "\n\n(앗... 지갑 송금 모듈을 찾을 수 없어 에러가 발생했어... 관리자에게 문의해줘...)"
                 except Exception as e:
-                    print(f"하묘 DB 연동 오류 (aiosqlite): {e}")
-                    payment_msg = "\n\n(앗... 지갑 송금에 에러가 발생했어... 관리자에게 문의해줘...)"
+                    print(f"하묘 DB 지급 오류: {e}")
+                    payment_msg = "\n\n(앗... 지갑 송금 처리 중 에러가 발생했어... 관리자에게 문의해줘...)"
 
         # 유저에게 결과 전송
         if prize == "꽝":
