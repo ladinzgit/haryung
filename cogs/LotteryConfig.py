@@ -61,7 +61,8 @@ def get_guild_config(guild_id: str) -> dict:
             "board_message_ids": [],
             "info_channel_id": None,
             "info_message_id": None,
-            "drawn_numbers": {}
+            "drawn_numbers": {},
+            "auto_reset": False
         }
         save_config(config)
     return config[guild_id]
@@ -115,6 +116,7 @@ class LotteryConfig(commands.Cog):
             ("`*뽑기설정 역할설정`", "당첨 시 멘션할 역할을 설정합니다."),
             ("`*뽑기설정 뽑기판생성`", "현재 채널에 뽑기판을 생성합니다."),
             ("`*뽑기설정 메시지생성`", "현재 채널에 뽑기권 안내 메시지를 생성합니다."),
+            ("`*뽑기설정 자동초기화 [true/false]`", "뽑기판 모두 소모 시 자동 초기화 여부를 설정합니다."),
         ]
         for name, desc in cmds:
             embed.add_field(name=name, value=desc, inline=False)
@@ -373,6 +375,20 @@ class LotteryConfig(commands.Cog):
                 await ctx.send(BOARD_SEPARATOR)
 
         save_config(config)
+
+    @lottery_settings.command(name="자동초기화")
+    @is_guild_admin()
+    async def set_auto_reset(self, ctx, enabled: bool):
+        """뽑기판 모두 소모 시 자동 초기화 여부를 설정합니다."""
+        guild_id = str(ctx.guild.id)
+        config = load_config()
+        gc = config.setdefault(guild_id, get_guild_config(guild_id))
+
+        gc["auto_reset"] = enabled
+        save_config(config)
+
+        status = "활성화" if enabled else "비활성화"
+        await ctx.send(f"🔄 뽑기판 자동 초기화 기능이 **{status}** 되었습니다.")
 
     @lottery_settings.command(name="메시지생성")
     @is_guild_admin()

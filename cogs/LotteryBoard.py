@@ -155,21 +155,55 @@ class LotteryNumberButton(ui.Button):
         gc["drawn_numbers"] = drawn
         save_config(config)
 
+        # 온 지급 처리 추가
+        payment_msg = ""
+        if prize != "꽝" and prize.endswith("온"):
+            amount_str = prize[:-1].replace(",", "").strip()
+            if amount_str.isdigit():
+                amount = int(amount_str)
+                import os
+                hamyo_db_path = "/home/ladinz/hamyo/data/balance.db"
+                if os.name == 'nt':
+                    hamyo_db_path = r"d:\projects\hamyo\data\balance.db"
+                
+                try:
+                    import aiosqlite
+                    async with aiosqlite.connect(hamyo_db_path) as db:
+                        await db.execute("""
+                            INSERT INTO balances (user_id, balance)
+                            VALUES (?, ?)
+                            ON CONFLICT(user_id) DO UPDATE SET balance = balance + excluded.balance
+                        """, (user_id, amount))
+                        await db.commit()
+                    payment_msg = f"\n\n(지갑으로 **{amount}온**이 지급되었어...!)"
+                except ImportError:
+                    import sqlite3
+                    try:
+                        with sqlite3.connect(hamyo_db_path) as db:
+                            db.execute("""
+                                INSERT INTO balances (user_id, balance)
+                                VALUES (?, ?)
+                                ON CONFLICT(user_id) DO UPDATE SET balance = balance + excluded.balance
+                            """, (user_id, amount))
+                            db.commit()
+                        payment_msg = f"\n\n(지갑으로 **{amount}온**이 지급되었어...!)"
+                    except Exception as e:
+                        print(f"하묘 DB 연동 오류 (sqlite3): {e}")
+                        payment_msg = "\n\n(앗... 지갑 송금에 에러가 발생했어... 관리자에게 문의해줘...)"
+                except Exception as e:
+                    print(f"하묘 DB 연동 오류 (aiosqlite): {e}")
+                    payment_msg = "\n\n(앗... 지갑 송금에 에러가 발생했어... 관리자에게 문의해줘...)"
+
         # 유저에게 결과 전송
         if prize == "꽝":
             result_msg = DRAW_LOSE
         else:
-            result_msg = DRAW_WIN.format(prize=prize)
+            result_msg = DRAW_WIN.format(prize=prize) + payment_msg
 
         await interaction.response.send_message(
             f"**{self.number}번**을 뽑았어...\n{result_msg}",
             ephemeral=True
         )
-
-        # 버튼 상태 업데이트 (현재 메시지의 뷰 갱신)
-        board_idx = (self.number - 1) // NUMBERS_PER_BOARD
-        new_view = LotteryBoardView(guild_id, board_idx)
-        await interaction.message.edit(view=new_view)
 
         # 알림 채널에 결과 전송
         alert_channel_id = gc.get("alert_channel_id")
@@ -192,6 +226,46 @@ class LotteryNumberButton(ui.Button):
                         color=discord.Color.greyple()
                     )
                     await alert_channel.send(embed=alert_embed)
+
+        # 자동 초기화 체크
+        if len(drawn) >= TOTAL_NUMBERS and gc.get("auto_reset", False):
+            prize_pool = []
+            for p in gc.get("prizes", []):
+                prize_pool.extend([p["name"]] * p["count"])
+
+            if len(prize_pool) == TOTAL_NUMBERS:
+                random.shuffle(prize_pool)
+                gc["shuffled_prizes"] = prize_pool
+                gc["shuffled"] = True
+                gc["drawn_numbers"] = {}
+                save_config(config)
+
+                # 유저 데이터 초기화
+                if guild_id in data:
+                    data[guild_id] = {}
+                    save_data(data)
+
+                # 모든 뽑기판 갱신
+                if gc.get("board_message_ids") and gc.get("board_channel_id"):
+                    board_channel = interaction.guild.get_channel(gc["board_channel_id"])
+                    if board_channel:
+                        for idx, mid in enumerate(gc["board_message_ids"]):
+                            try:
+                                msg = await board_channel.fetch_message(mid)
+                                new_view = LotteryBoardView(guild_id, idx)
+                                await msg.edit(view=new_view)
+                            except Exception:
+                                pass
+
+                if alert_channel_id and 'alert_channel' in locals() and alert_channel:
+                    await alert_channel.send("🔄 **모든 뽑기판이 소모되어 경품이 자동 셔플되고 뽑기 기록이 초기화되었습니다!**")
+
+                return
+
+        # 자동 초기화가 안된 경우 자신의 뷰 갱신
+        board_idx = (self.number - 1) // NUMBERS_PER_BOARD
+        new_view = LotteryBoardView(guild_id, board_idx)
+        await interaction.message.edit(view=new_view)
 
 
 class LotteryBoardView(ui.View):
