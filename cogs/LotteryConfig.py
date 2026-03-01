@@ -414,7 +414,7 @@ class LotteryConfig(commands.Cog):
             return
 
         embed = discord.Embed(
-            title="설날 운명의 뽑기판",
+            title="🧩゛책방뽑기판",
             description="아래 버튼을 눌러 뽑기권을 확인하거나 받을 수 있어...",
             color=discord.Color.purple()
         )
