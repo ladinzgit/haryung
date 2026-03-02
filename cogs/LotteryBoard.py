@@ -250,10 +250,8 @@ class LotteryNumberButton(ui.Button):
                 gc["drawn_numbers"] = {}
                 save_config(config)
 
-                # 유저 데이터 초기화
-                if guild_id in data:
-                    data[guild_id] = {}
-                    save_data(data)
+                # 유저 데이터는 초기화하지 않고 유지하도록 변경
+                # (기존: data[guild_id] = {})
 
                 # 모든 뽑기판 갱신
                 if gc.get("board_message_ids") and gc.get("board_channel_id"):
