@@ -75,7 +75,7 @@ class LavalinkVoiceClient(discord.VoiceProtocol):
             self.client.lavalink = lavalink.Client(client.user.id)
             self.client.lavalink.add_node(
                 host='localhost', port=2333, password='youshallnotpass',
-                region='us', name='default-node',
+                region='us', name='haryung-node',
             )
         self.lavalink = self.client.lavalink
 
