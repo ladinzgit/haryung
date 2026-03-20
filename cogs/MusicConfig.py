@@ -5,8 +5,8 @@
 import discord
 from discord.ext import commands
 
-from src.core.admin_utils import is_guild_admin, GUILD_IDS
-from src.music.music import load_config, save_config
+from admin_utils import is_guild_admin, GUILD_IDS
+from cogs.music import load_config, save_config
 
 
 # ──────────────────────────────────────────
@@ -32,26 +32,27 @@ class ChannelModal(discord.ui.Modal, title='음악 채널 설정'):
             channel_id = int(raw)
         except ValueError:
             return await interaction.response.send_message(
-                '❌ 올바른 채널 ID를 입력해주세요.', ephemeral=True,
+                '...올바른 채널 ID를 입력해야 해......', ephemeral=True,
             )
 
         channel = interaction.guild.get_channel(channel_id)
         if not isinstance(channel, discord.TextChannel):
             return await interaction.response.send_message(
-                '❌ 해당 ID의 텍스트 채널을 찾을 수 없습니다.', ephemeral=True,
+                '...그 ID의 채널을 찾을 수 없었어......', ephemeral=True,
             )
 
         # 권한 확인
         perms = channel.permissions_for(interaction.guild.me)
         if not perms.manage_messages or not perms.send_messages:
             return await interaction.response.send_message(
-                f'❌ {channel.mention}에서 메시지 관리 및 전송 권한이 필요합니다.', ephemeral=True,
+                f'...{channel.mention} 채널에 메시지 권한이 없어...... 관리자에게 확인해봐......',
+                ephemeral=True,
             )
 
         # 설정 패널을 먼저 업데이트 (작업이 오래 걸릴 수 있으므로)
         await interaction.response.edit_message(
             embed=discord.Embed(
-                description=f'⏳ {channel.mention} 채널을 초기화하는 중...',
+                description=f'......{channel.mention} 채널에 선율의 자리를 마련하는 중......',
                 color=0xf0c040,
             ),
             view=None,
@@ -69,14 +70,14 @@ class ChannelModal(discord.ui.Modal, title='음악 채널 설정'):
         except discord.Forbidden:
             return await interaction.edit_original_response(
                 embed=discord.Embed(
-                    description=f'❌ {channel.mention}에서 메시지를 관리할 권한이 없습니다.',
+                    description=f'...{channel.mention} 채널에서 메시지를 관리할 권한이 없어......',
                     color=0xff4444,
                 )
             )
         except Exception as e:
             return await interaction.edit_original_response(
                 embed=discord.Embed(
-                    description=f'❌ 채널 설정 중 오류가 발생했습니다: {e}',
+                    description=f'...채널 설정 중 문제가 생겼어...... {e}',
                     color=0xff4444,
                 )
             )
@@ -134,11 +135,15 @@ class MusicConfigView(discord.ui.View):
     async def _check_admin(interaction: discord.Interaction) -> bool:
         """버튼 사용자가 허용된 서버의 관리자인지 확인합니다."""
         if interaction.guild and interaction.guild.id not in GUILD_IDS:
-            await interaction.response.send_message('허용되지 않은 서버입니다.', ephemeral=True)
+            await interaction.response.send_message(
+                '...여긴... 내가 머무는 서재가 아니야......', ephemeral=True,
+            )
             return False
         if interaction.user.guild_permissions.administrator:
             return True
-        await interaction.response.send_message('이 기능은 서버 관리자만 사용할 수 있습니다.', ephemeral=True)
+        await interaction.response.send_message(
+            '...이건 관리자만 할 수 있어......', ephemeral=True,
+        )
         return False
 
     @discord.ui.button(label='채널 설정', emoji='📚', style=discord.ButtonStyle.primary, row=0)
@@ -156,18 +161,18 @@ class MusicConfigView(discord.ui.View):
         channel_id = cfg.get('channel_id')
         if not channel_id:
             return await interaction.response.send_message(
-                '❌ 설정된 음악 채널이 없습니다.', ephemeral=True,
+                '...설정된 음악 채널이 없어......', ephemeral=True,
             )
 
         channel = interaction.guild.get_channel(channel_id)
         if not channel:
             return await interaction.response.send_message(
-                '❌ 설정된 채널을 찾을 수 없습니다.', ephemeral=True,
+                '...설정된 채널을 찾을 수 없었어......', ephemeral=True,
             )
 
         await interaction.response.edit_message(
             embed=discord.Embed(
-                description=f'⏳ {channel.mention} 채널을 초기화하는 중...',
+                description=f'......{channel.mention} 채널을 다시 정리하는 중......',
                 color=0xf0c040,
             ),
             view=None,
@@ -201,7 +206,7 @@ class MusicConfigView(discord.ui.View):
     @discord.ui.button(label='닫기', emoji='✖️', style=discord.ButtonStyle.secondary, row=0)
     async def close_btn(self, interaction: discord.Interaction, button: discord.ui.Button):
         await interaction.response.edit_message(
-            embed=discord.Embed(description='✅ 설정을 닫았습니다.', color=0x2b2d31),
+            embed=discord.Embed(description='...조용히 닫을게......', color=0x2b2d31),
             view=None,
         )
         self.stop()
@@ -234,7 +239,7 @@ class MusicConfig(commands.Cog):
         if isinstance(error, commands.CheckFailure):
             await ctx.send(
                 embed=discord.Embed(
-                    description='❌ 이 명령어는 서버 관리자만 사용할 수 있습니다.',
+                    description='...이건 관리자만 쓸 수 있어......',
                     color=0xff4444,
                 ),
                 delete_after=6,

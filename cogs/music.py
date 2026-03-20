@@ -198,7 +198,7 @@ class MusicPlayerView(discord.ui.View):
                 value='• YouTube 검색어\n• YouTube URL / 재생목록 URL',
                 inline=False,
             )
-            embed.set_footer(text='비몽책방 · 하묘')
+            embed.set_footer(text='비몽책방 · 하령')
             return embed
 
         # ─ 재생 상태 ─
@@ -209,7 +209,7 @@ class MusicPlayerView(discord.ui.View):
         volume = getattr(player, 'volume', 100)
 
         color = 0xf4d03f if paused else 0xc8a96e
-        status = '⏸️  선율이 잠시 멈췄어요' if paused else '▶️  선율이 흐르는 중'
+        status = '⏸️  선율이...... 잠시 멈췄어......' if paused else '▶️  선율이 흐르는 중......'
 
         embed = discord.Embed(title=status, color=color)
 
@@ -278,12 +278,12 @@ class MusicPlayerView(discord.ui.View):
     async def pause_btn(self, interaction: discord.Interaction, button: discord.ui.Button):
         if not interaction.user.voice:
             return await interaction.response.send_message(
-                '음성 채널에 먼저 입장해주세요.', ephemeral=True,
+                '...음성 채널에 먼저 들어와야 해......', ephemeral=True,
             )
         player = self._player()
         if not player or not player.is_playing:
             return await interaction.response.send_message(
-                '재생 중인 음악이 없습니다.', ephemeral=True,
+                '......지금은 흐르는 선율이 없어......', ephemeral=True,
             )
         await player.set_pause(not player.paused)
         self._refresh_buttons()
@@ -294,27 +294,27 @@ class MusicPlayerView(discord.ui.View):
     async def skip_btn(self, interaction: discord.Interaction, button: discord.ui.Button):
         if not interaction.user.voice:
             return await interaction.response.send_message(
-                '음성 채널에 먼저 입장해주세요.', ephemeral=True,
+                '...음성 채널에 먼저 들어와야 해......', ephemeral=True,
             )
         player = self._player()
         if not player or not player.current:
             return await interaction.response.send_message(
-                '재생 중인 음악이 없습니다.', ephemeral=True,
+                '......지금은 흐르는 선율이 없어......', ephemeral=True,
             )
         await player.skip()
-        await interaction.response.send_message('⏭️ 다음 곡으로 넘어갑니다.', ephemeral=True)
+        await interaction.response.send_message('...다음 선율로...... 넘어갈게......', ephemeral=True)
 
     @discord.ui.button(emoji='⏹️', label='정지', style=discord.ButtonStyle.danger,
                        custom_id='mp:stop', row=0)
     async def stop_btn(self, interaction: discord.Interaction, button: discord.ui.Button):
         if not interaction.user.voice:
             return await interaction.response.send_message(
-                '음성 채널에 먼저 입장해주세요.', ephemeral=True,
+                '...음성 채널에 먼저 들어와야 해......', ephemeral=True,
             )
         player = self._player()
         if not player:
             return await interaction.response.send_message(
-                '재생 중인 음악이 없습니다.', ephemeral=True,
+                '......지금은 흐르는 선율이 없어......', ephemeral=True,
             )
         player.queue.clear()
         await player.stop()
@@ -331,7 +331,7 @@ class MusicPlayerView(discord.ui.View):
         player = self._player()
         if not player:
             return await interaction.response.send_message(
-                '재생 중인 음악이 없습니다.', ephemeral=True,
+                '......지금은 흐르는 선율이 없어......', ephemeral=True,
             )
         player.shuffle = not getattr(player, 'shuffle', False)
         self._refresh_buttons()
@@ -343,7 +343,7 @@ class MusicPlayerView(discord.ui.View):
         player = self._player()
         if not player:
             return await interaction.response.send_message(
-                '재생 중인 음악이 없습니다.', ephemeral=True,
+                '......지금은 흐르는 선율이 없어......', ephemeral=True,
             )
         player.loop = (getattr(player, 'loop', 0) + 1) % 3
         self._refresh_buttons()
@@ -355,7 +355,7 @@ class MusicPlayerView(discord.ui.View):
         player = self._player()
         if not player:
             return await interaction.response.send_message(
-                '재생 중인 음악이 없습니다.', ephemeral=True,
+                '......지금은 흐르는 선율이 없어......', ephemeral=True,
             )
         await player.set_volume(max(0, getattr(player, 'volume', 100) - 10))
         self._refresh_buttons()
@@ -367,7 +367,7 @@ class MusicPlayerView(discord.ui.View):
         player = self._player()
         if not player:
             return await interaction.response.send_message(
-                '재생 중인 음악이 없습니다.', ephemeral=True,
+                '......지금은 흐르는 선율이 없어......', ephemeral=True,
             )
         await player.set_volume(min(200, getattr(player, 'volume', 100) + 10))
         self._refresh_buttons()
@@ -504,7 +504,7 @@ class Music(commands.Cog):
         guild = message.guild
 
         async def _err(text: str, code: str):
-            embed = discord.Embed(title='❌ 오류 발생', color=0xff4444)
+            embed = discord.Embed(title='❌ 선율이 끊겼어......', color=0xff4444)
             embed.add_field(name='내용', value=text, inline=False)
             embed.add_field(name='오류 코드', value=f'`{code}`', inline=True)
             embed.set_footer(text='비몽책방 · 문제가 지속되면 관리자에게 문의하세요')
@@ -512,7 +512,7 @@ class Music(commands.Cog):
 
         # 음성 채널 확인
         if not message.author.voice or not message.author.voice.channel:
-            return await _err('음성 채널에 먼저 입장해주세요.', 'MUSIC-000')
+            return await _err('...음성 채널에 먼저 들어와야 해......', 'MUSIC-000')
 
         voice_ch = message.author.voice.channel
         voice_client = guild.voice_client
@@ -521,18 +521,18 @@ class Music(commands.Cog):
         if voice_client is None:
             perms = voice_ch.permissions_for(guild.me)
             if not perms.connect or not perms.speak:
-                return await _err('음성 채널 접속 또는 말하기 권한이 없습니다.', 'MUSIC-000')
+                return await _err('...그 채널엔 들어갈 수 없어...... 권한이 없나봐......', 'MUSIC-000')
             try:
                 await voice_ch.connect(cls=LavalinkVoiceClient)
             except Exception as e:
-                await _err('음성 채널 연결에 실패했습니다.', 'MUSIC-002')
+                await _err('...음성 채널 연결에 실패했어......', 'MUSIC-002')
                 await self._log(
                     f'음성 채널 연결 실패 (guild={guild.id}, ch={voice_ch.id}): {type(e).__name__}: {e}',
                     code='MUSIC-002',
                 )
                 return
         elif voice_client.channel.id != voice_ch.id:
-            return await _err('봇이 있는 음성 채널에 입장해주세요.', 'MUSIC-000')
+            return await _err('...내가 있는 음성 채널로 와야 해......', 'MUSIC-000')
 
         player = self.bot.lavalink.player_manager.create(guild.id)
         player.store('channel', channel_id)
@@ -543,7 +543,7 @@ class Music(commands.Cog):
 
         # Lavalink 노드 확인
         if player.node is None:
-            await _err('음악 서버(Lavalink)에 연결되어 있지 않습니다. 잠시 후 다시 시도해주세요.', 'MUSIC-001')
+            await _err('...음악 서버에 연결되어 있지 않아...... 잠시 후 다시 해봐......', 'MUSIC-001')
             await self._log(
                 f'Lavalink 노드 미연결 (guild={guild.id}): player.node is None',
                 code='MUSIC-001',
@@ -555,7 +555,7 @@ class Music(commands.Cog):
         try:
             results = await player.node.get_tracks(search)
         except Exception as e:
-            await _err('트랙 검색 중 오류가 발생했습니다.', 'MUSIC-003')
+            await _err('...선율을 찾는 중 문제가 생겼어......', 'MUSIC-003')
             await self._log(
                 f'트랙 검색 실패 (guild={guild.id}, query="{query}"): {type(e).__name__}: {e}',
                 code='MUSIC-003',
@@ -563,7 +563,7 @@ class Music(commands.Cog):
             return
 
         if results.load_type == LoadType.ERROR:
-            await _err('트랙을 불러오는 중 오류가 발생했습니다.', 'MUSIC-003')
+            await _err('...선율을 불러오는 중 문제가 생겼어......', 'MUSIC-003')
             await self._log(
                 f'LoadType.ERROR (guild={guild.id}, query="{query}")',
                 code='MUSIC-003',
@@ -571,7 +571,7 @@ class Music(commands.Cog):
             return
 
         if results.load_type == LoadType.EMPTY:
-            return await _err('검색 결과가 없습니다. 다른 검색어를 시도해보세요.', 'MUSIC-000')
+            return await _err('...찾을 수 없었어...... 다른 이름으로 불러봐......', 'MUSIC-000')
 
         was_playing = player.is_playing
 
@@ -579,12 +579,12 @@ class Music(commands.Cog):
             for t in results.tracks:
                 t.extra['requester'] = message.author.id
                 player.add(track=t)
-            confirm = f'📋 **{results.playlist_info.name}** ({len(results.tracks)}곡) 대기열에 추가됨'
+            confirm = f'...🎵 **{results.playlist_info.name}** 목록({len(results.tracks)}곡)이 대기열에 추가됐어......'
         else:
             track = results.tracks[0]
             track.extra['requester'] = message.author.id
             player.add(track=track)
-            confirm = f'🎵 **{track.title}** 대기열에 추가됨'
+            confirm = f'...🎵 **{track.title}** 대기열에 추가됐어......'
 
         if was_playing:
             await channel.send(
@@ -596,7 +596,7 @@ class Music(commands.Cog):
             try:
                 await player.play()
             except Exception as e:
-                await _err('트랙 재생을 시작하는 데 실패했습니다.', 'MUSIC-004')
+                await _err('...선율을 시작하는 데 실패했어......', 'MUSIC-004')
                 await self._log(
                     f'player.play() 실패 (guild={guild.id}): {type(e).__name__}: {e}',
                     code='MUSIC-004',
@@ -643,8 +643,8 @@ class Music(commands.Cog):
         if not channel:
             return
 
-        embed = discord.Embed(title='❌ 재생 오류', color=0xff4444)
-        embed.add_field(name='내용', value='트랙 재생 중 오류가 발생하여 해당 곡을 건너뜁니다.', inline=False)
+        embed = discord.Embed(title='❌ 선율이 끊겼어......', color=0xff4444)
+        embed.add_field(name='내용', value='...선율을 재생하는 중 문제가 생겨 다음 곡으로 넘어갈게......', inline=False)
         embed.add_field(name='오류 코드', value='`MUSIC-005`', inline=True)
         embed.set_footer(text='비몽책방 · 문제가 지속되면 관리자에게 문의하세요')
         await channel.send(embed=embed, delete_after=10)
