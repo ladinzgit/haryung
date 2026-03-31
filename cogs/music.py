@@ -386,7 +386,7 @@ class Music(commands.Cog):
             bot.lavalink = lavalink.Client(bot.user.id)
             bot.lavalink.add_node(
                 host='localhost', port=2333, password='youshallnotpass',
-                region='us', name='default-node',
+                region='us', name='haryung-node',
             )
         self.lavalink: lavalink.Client = bot.lavalink
         self.lavalink.add_event_hooks(self)
